@@ -1,0 +1,11 @@
+version: "2"
+services:
+    apache:
+      image: php 
+      container_name: my_apache
+      volumes:
+        - /home/lorenzo/Scuola/sicurezza/docker_apache/server:/var/www/html
+      ports:
+          - 80:80
+      restart: unless-stopped
+
