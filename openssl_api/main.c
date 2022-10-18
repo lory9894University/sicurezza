@@ -2,6 +2,11 @@
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <string.h>
+#define KEYLEN 5086
+#define TEXTLEN 10000
+#define MAX_TEXT_PATH 100
+#define MAX_KEY_PATH 100
+
 
 void handleErrors(void)
 {
@@ -9,12 +14,13 @@ void handleErrors(void)
   abort();
 }
 
-int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key,
+int encrypt(unsigned char *text, int text_len, unsigned char *key,
             unsigned char *iv, unsigned char *ciphertext);
 
 int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
-            unsigned char *iv, unsigned char *plaintext);
+            unsigned char *iv, unsigned char *text);
 
+void set_variables(char key_file[16], char text_file[16], int *encrypt_flag, int argc, char **argv);
 
 void print_help() {
   printf("Usage: openssl_api [options] [file]\n");
@@ -27,84 +33,94 @@ void print_help() {
 
 int main (int argc, char *argv[])
 {
-  char *key_file;
-  char *text_file;
+  char key_file[MAX_KEY_PATH];
+  char text_file[MAX_TEXT_PATH];
   int encrypt_flag = 0;
+  FILE *key_file_ptr;
+  char key[KEYLEN];
+  char *line = NULL;
+  size_t len = 0;
 
+
+
+  set_variables(key_file, text_file, &encrypt_flag, argc, argv);
+
+  //get variable key from file key_file
+  if ( ( key_file_ptr = fopen(key_file, "rb")) != NULL) {
+    while ((getline(&line, &len, key_file_ptr)) != -1) {
+      line[strcspn(line, "\n")] = 0;
+      if (line[0] != '-') {
+        strcat(key, line);
+      }
+    }
+    fclose(key_file_ptr);
+  } else {
+    printf("Error: key file not found\n");
+    exit(1);
+  }
+
+  /* A 128 bit random IV */
+  unsigned char *iv = (unsigned char *)"5893781563109275";
+
+  //get text from file text_file
+  FILE *text_file_ptr;
+  char text[TEXTLEN];
+  if (( text_file_ptr = fopen(text_file, "rb")) != NULL) {
+    fread(text, 1, KEYLEN, text_file_ptr);
+    fclose(text_file_ptr);
+  }
+  else {
+    printf("Error: text file not found\n");
+    exit(1);
+  }
+
+  if (encrypt_flag) {
+    unsigned char ciphertext[TEXTLEN];
+    int ciphertext_len = encrypt(text, strlen(text), key, iv, ciphertext);
+    printf("%s",ciphertext);
+
+  }else {
+    unsigned char decryptedtext[128];
+    int decryptedtext_len = decrypt(text, strlen(text), key, iv,
+                                decryptedtext);
+
+    /* Add a NULL terminator. We are expecting printable text */
+    decryptedtext[decryptedtext_len] = '\0';
+    printf("%s\n", decryptedtext);
+
+  }
+
+  return 0;
+}
+
+void set_variables(char key_file[16], char text_file[16], int *encrypt_flag, int argc, char **argv) {
   if (argc == 1) {
     printf("Insert key path\n");
     scanf("%s", key_file);
     printf("Insert text file path\n");
     scanf("%s", text_file);
     printf("Encrypt or decrypt? (0/1)\n");
-    scanf("%d", &encrypt_flag);
-    if (encrypt_flag != 0 && encrypt_flag != 1) {
+    scanf("%d", encrypt_flag);
+    if (*encrypt_flag != 0 && *encrypt_flag != 1) {
       printf("Invalid input");
-      return 1;
+      exit(1);
     }
   }
   else if (argc == 4) {
-    key_file = argv[1];
-    text_file = argv[3];
+    strcpy(key_file,argv[1]);
+    strcpy(text_file, argv[3]);
     //if argv[2] is --decrypt, encrypt_flag = 0 else if argv[2] is --encrypt, encrypt_flag = 1
-    encrypt_flag = (strcmp(argv[2], "--decrypt") == 0) ? 0 : 1;
+    *encrypt_flag = (strcmp(argv[2], "--decrypt") == 0) ? 0 : 1;
   }
   else {
     print_help();
-    return 1;
+    exit(1);
   }
-  /*
-   * Set up the key and iv. Do I need to say to not hard code these in a
-   * real application? :-)
-   */
 
-  /* A 256 bit key */
-  unsigned char *key = (unsigned char *)"01234567890123456789012345678901";
-
-  /* A 128 bit IV */
-  unsigned char *iv = (unsigned char *)"0123456789012345";
-
-  /* Message to be encrypted */
-  unsigned char *plaintext =
-      (unsigned char *)"The quick brown fox jumps over the lazy dog";
-
-  /*
-   * Buffer for ciphertext. Ensure the buffer is long enough for the
-   * ciphertext which may be longer than the plaintext, depending on the
-   * algorithm and mode.
-   */
-  unsigned char ciphertext[128];
-
-  /* Buffer for the decrypted text */
-  unsigned char decryptedtext[128];
-
-  int decryptedtext_len, ciphertext_len;
-
-  /* Encrypt the plaintext */
-  ciphertext_len = encrypt (plaintext, strlen ((char *)plaintext), key, iv,
-                            ciphertext);
-
-  /* Do something useful with the ciphertext here */
-  printf("Ciphertext is:\n");
-  BIO_dump_fp (stdout, (const char *)ciphertext, ciphertext_len);
-
-  /* Decrypt the ciphertext */
-  decryptedtext_len = decrypt(ciphertext, ciphertext_len, key, iv,
-                              decryptedtext);
-
-  /* Add a NULL terminator. We are expecting printable text */
-  decryptedtext[decryptedtext_len] = '\0';
-
-  /* Show the decrypted text */
-  printf("Decrypted text is:\n");
-  printf("%s\n", decryptedtext);
-
-
-  return 0;
 }
 
 
-int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key,
+int encrypt(unsigned char *text, int text_len, unsigned char *key,
             unsigned char *iv, unsigned char *ciphertext)
 {
   EVP_CIPHER_CTX *ctx;
@@ -131,9 +147,11 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key,
    * Provide the message to be encrypted, and obtain the encrypted output.
    * EVP_EncryptUpdate can be called multiple times if necessary
    */
-  if(1 != EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintext_len))
+  if(1 != EVP_EncryptUpdate(ctx, ciphertext, &len, text, text_len))
     handleErrors();
   ciphertext_len = len;
+
+
 
   /*
    * Finalise the encryption. Further ciphertext bytes may be written at
@@ -150,13 +168,13 @@ int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key,
 }
 
 int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
-            unsigned char *iv, unsigned char *plaintext)
+            unsigned char *iv, unsigned char *text)
 {
   EVP_CIPHER_CTX *ctx;
 
   int len;
 
-  int plaintext_len;
+  int text_len;
 
   /* Create and initialise the context */
   if(!(ctx = EVP_CIPHER_CTX_new()))
@@ -173,23 +191,23 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
     handleErrors();
 
   /*
-   * Provide the message to be decrypted, and obtain the plaintext output.
+   * Provide the message to be decrypted, and obtain the text output.
    * EVP_DecryptUpdate can be called multiple times if necessary.
    */
-  if(1 != EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertext_len))
+  if(1 != EVP_DecryptUpdate(ctx, text, &len, ciphertext, ciphertext_len))
     handleErrors();
-  plaintext_len = len;
+  text_len = len;
 
   /*
-   * Finalise the decryption. Further plaintext bytes may be written at
+   * Finalise the decryption. Further text bytes may be written at
    * this stage.
    */
-  if(1 != EVP_DecryptFinal_ex(ctx, plaintext + len, &len))
+  if(1 != EVP_DecryptFinal_ex(ctx, text + len, &len))
     handleErrors();
-  plaintext_len += len;
+  text_len += len;
 
   /* Clean up */
   EVP_CIPHER_CTX_free(ctx);
 
-  return plaintext_len;
+  return text_len;
 }
