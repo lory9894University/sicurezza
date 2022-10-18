@@ -2,11 +2,12 @@
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <string.h>
-#define KEYLEN 5086
+#define KEYLEN 32
 #define TEXTLEN 10000
 #define MAX_TEXT_PATH 100
 #define MAX_KEY_PATH 100
 
+//openssl enc -aes-256-cbc -k prova -P -md sha1
 
 void handleErrors(void)
 {
@@ -47,13 +48,8 @@ int main (int argc, char *argv[])
 
   //get variable key from file key_file
   if ( ( key_file_ptr = fopen(key_file, "rb")) != NULL) {
-    while ((getline(&line, &len, key_file_ptr)) != -1) {
-      line[strcspn(line, "\n")] = 0;
-      if (line[0] != '-') {
-        strcat(key, line);
-      }
-    }
-    fclose(key_file_ptr);
+      fread(key, 1, KEYLEN, key_file_ptr);
+      fclose(key_file_ptr);
   } else {
     printf("Error: key file not found\n");
     exit(1);
