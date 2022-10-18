@@ -15,10 +15,10 @@ void handleErrors(void)
   abort();
 }
 
-int encrypt(unsigned char *text, int text_len, unsigned char *key,
+void encrypt(unsigned char *text, int text_len, unsigned char *key,
             unsigned char *iv, unsigned char *ciphertext);
 
-int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
+void decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
             unsigned char *iv, unsigned char *text);
 
 void set_variables(char key_file[16], char text_file[16], int *encrypt_flag, int argc, char **argv);
@@ -41,8 +41,6 @@ int main (int argc, char *argv[])
   char key[KEYLEN];
   char *line = NULL;
   size_t len = 0;
-
-
 
   set_variables(key_file, text_file, &encrypt_flag, argc, argv);
 
@@ -72,17 +70,17 @@ int main (int argc, char *argv[])
 
   if (encrypt_flag) {
     unsigned char ciphertext[TEXTLEN];
-    int ciphertext_len = encrypt(text, strlen(text), key, iv, ciphertext);
+    encrypt(text, strlen(text), key, iv, ciphertext);
     printf("%s",ciphertext);
 
   }else {
-    unsigned char decryptedtext[128];
-    int decryptedtext_len = decrypt(text, strlen(text), key, iv,
+    unsigned char decryptedtext[TEXTLEN];
+    decrypt(text, strlen(text), key, iv,
                                 decryptedtext);
 
     /* Add a NULL terminator. We are expecting printable text */
-    decryptedtext[decryptedtext_len] = '\0';
-    printf("%s\n", decryptedtext);
+    decryptedtext[strlen(decryptedtext)] = '\0';
+    printf("%s", decryptedtext);
 
   }
 
@@ -116,14 +114,12 @@ void set_variables(char key_file[16], char text_file[16], int *encrypt_flag, int
 }
 
 
-int encrypt(unsigned char *text, int text_len, unsigned char *key,
+void encrypt(unsigned char *text, int text_len, unsigned char *key,
             unsigned char *iv, unsigned char *ciphertext)
 {
   EVP_CIPHER_CTX *ctx;
 
   int len;
-
-  int ciphertext_len;
 
   /* Create and initialise the context */
   if(!(ctx = EVP_CIPHER_CTX_new()))
@@ -145,7 +141,6 @@ int encrypt(unsigned char *text, int text_len, unsigned char *key,
    */
   if(1 != EVP_EncryptUpdate(ctx, ciphertext, &len, text, text_len))
     handleErrors();
-  ciphertext_len = len;
 
 
 
@@ -155,22 +150,18 @@ int encrypt(unsigned char *text, int text_len, unsigned char *key,
    */
   if(1 != EVP_EncryptFinal_ex(ctx, ciphertext + len, &len))
     handleErrors();
-  ciphertext_len += len;
 
   /* Clean up */
   EVP_CIPHER_CTX_free(ctx);
 
-  return ciphertext_len;
 }
 
-int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
+void decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
             unsigned char *iv, unsigned char *text)
 {
   EVP_CIPHER_CTX *ctx;
 
   int len;
-
-  int text_len;
 
   /* Create and initialise the context */
   if(!(ctx = EVP_CIPHER_CTX_new()))
@@ -192,7 +183,6 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
    */
   if(1 != EVP_DecryptUpdate(ctx, text, &len, ciphertext, ciphertext_len))
     handleErrors();
-  text_len = len;
 
   /*
    * Finalise the decryption. Further text bytes may be written at
@@ -200,10 +190,8 @@ int decrypt(unsigned char *ciphertext, int ciphertext_len, unsigned char *key,
    */
   if(1 != EVP_DecryptFinal_ex(ctx, text + len, &len))
     handleErrors();
-  text_len += len;
 
   /* Clean up */
   EVP_CIPHER_CTX_free(ctx);
 
-  return text_len;
 }
