@@ -1,3 +1,7 @@
 .idea/
 *.o
 cmake-build-debug/
+*.key
+main
+*.txt
+*.enc
