@@ -1,0 +1,14 @@
+version: "3.2"
+services:
+    apache:
+      image: php 
+      container_name: apache_ldap 
+      volumes:
+        - ./server:/var/www/html
+        - ./conf_pwd/:/usr/local/apache2/
+        - ./etc_apache2/:/etc/apache2/
+      ports:
+          - 80:80
+          - 443:443
+      restart: unless-stopped
+
