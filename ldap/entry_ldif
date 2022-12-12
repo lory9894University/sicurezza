@@ -9,13 +9,6 @@
 
 version: 1
 
-# Entry 1: dc=lorenzodentis,dc=org
-dn: dc=lorenzodentis,dc=org
-dc: lorenzodentis
-o: lorenzodentis Inc.
-objectclass: top
-objectclass: dcObject
-objectclass: organization
 
 # Entry 2: ou=amici,dc=lorenzodentis,dc=org
 dn: ou=amici,dc=lorenzodentis,dc=org
@@ -29,7 +22,7 @@ cn: Gianluca Barmina
 cn: Barmina Gianluca
 objectclass: inetOrgPerson
 objectclass: top
-email: gianluca.barmina@gmail.com
+mail: gianluca.barmina@gmail.com
 uid: gbarmina
 sn: Barmina
 userpassword: {CRYPT}$6$r12ZVfMB$s6isV4ZFwK4S98cxswg00vDva617eIZtmROwPUmEOSD

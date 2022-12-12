@@ -1,7 +1,7 @@
 version: "3.2"
 services:
     apache:
-      image: php 
+      image: apache_ldap 
       container_name: apache_ldap 
       volumes:
         - ./docker_apache/server:/var/www/html
@@ -30,6 +30,9 @@ services:
     ldapdmin:
       image: osixia/phpldapadmin
       container_name: phpldapadmin
+      ports:
+        - 8443:443
+        - 8080:80
       environment:
         - PHPLDAPADMIN_LDAP_HOSTS=ldap-service
       restart: unless-stopped
