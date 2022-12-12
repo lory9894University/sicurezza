@@ -22,7 +22,7 @@ ldap_close($conn);
 <title> title </title>
 </head>
 <body>
-prova
+ldap Info <br>
 <?php
 echo "dn is: ". $entry["dn"] ."<br>";
 echo "first cn is: ". $entry["cn"][0] ."<br>";
@@ -30,5 +30,18 @@ echo "first email address is: ". $entry["mail"][0] ."<br>";
 echo "password is: ". $entry["userpassword"][0] ."<br>";
 //$certificate = $entry["usercertificate;binary"][0];
 ?>
+Certificate Info <br>
+<?php
+$cn = $_SERVER['SSL_CLIENT_S_DN_CN'];
+echo "cn is: ". $cn ."<br>";
+?>
+<br>
+<br>
+<?php
+if($cn != $entry["cn"][0]){
+	die("Certificate and user name does not corrisponds");
+}
+?>
+
 </body>
 </html>
