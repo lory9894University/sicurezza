@@ -1,0 +1,32 @@
+La persona che si occupa di implementare correttamente un sistema IAM è detta CISO (Chief infomration security officer).
+
+SAML Security Assertion Markup Language: scambia dati di autenticazione tra un provider di identità ed un fornitore di servizi
+
+slide con l'immagine del protocollo, quella con i punti da 1 a 7. il punto 2 è una http redirect
+
+l'esempio classico che implementa SAML è spid.
+Redirect verso l'idp scelto (poste italiane), ti autentichi, redirect verso il fornitore di servizi.
+
+Spid è opensource (Developers Italia
+
+OAuth2: permette l'emissione di un token da parte di un server di terze parti (google, amazon, etc)
+
+La differenza tra SAML è OAuth è che SAML è più indirizzato all'autenticazione certificata di un utente. (non è solo una autenticazione, ma anche una certificazione, l'utente è lorenzo ed ha certe caratteristiche (codice fiscale, nome, cognome, etc)). OAuth dice solo "questo è l'utente, se vuoi accedere alle suo informazioni te le do".
+In questo modo il consumer (fornitore di servizi) può autorizzare utenti senza salvare o condividere password.
+Importante ricordare che è un token, l'accesso è tempo-limitato. non è una autenticazione che rimane anche se con OAuth2 il tempo di utilizzo può essere prolungato a piacere.
+
+In soldoni il client viene reindirizzato verso l'auth server, questi gli restituisce un access token che il client userà per comunicare con il server (non l'auth server), ovviamente invia il token anche al server. ogni volta che il client invia una richiesta include l'access tocker. A volte i token hanno scadenza, se scadono si possono rinnovare senza doversi loggare di nuovo. c'è tutto un discorso ad un refresh access token che non sono riuscito a scrivere.
+
+OpenID.
+Un protocollo basato su  OAuth2 che però usa JSON per lo scambio di informazioni, si usa JWT (JSON Web Token). come in OAuth2 il JWT viene inviato insieme ad ogni richiesta del client, nell'header HTTP chiamato "Authorization"
+Per impedire CSRF all'access token viene aggiunto un PKCE.
+
+JWT è JSON firmato.Il formato JWT ha in coda una firma cifrata (HMAC). l'header ed il payload non sono cifrati.
+Il payload si divide in parametri registrati, pubblici e privati. registrati, specificati nell'rfc7519, consigliati ma opzionali 
+Parametri pubblici, definiti nel registro IANA , possono essere personalizzati ma bisonga evitare di causare conflitti (andare a chiamare un parametro con un nome di uno già definito nella lista IANA).
+Privati, quel che cazzo ti pare.
+
+Vediamo la firma: Prendiamo Payload e Header e generiamo un hash con questi due, poi lo cifriamo con una chiave assimmetrica, abbiamo ottenuto un firma HMAC. Il JWT viene firmato dall'authentication server.
+Perchè JWT? perchè le sessioni sono mantenute in memoria nel server, quindi occupano spazio. Con JWT la "sessione" viene mantenuta dal client e non dal server.
+Problemi, JWT hijacking oppure peggio, se viene scoperta la chiave con cui si firma ho compromesso l'intero sistema. Impossibilità di "interrompere" la sessione dal server. Se vi è hijacking il massimo che posso fare è insierire una eccezione (blacklist temporanea) oppure attendere la scadenza del token. Inoltre non so quanti user sono al momento loggati.
+

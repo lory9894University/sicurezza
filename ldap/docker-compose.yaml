@@ -3,6 +3,7 @@ services:
     apache:
       image: apache_ldap 
       container_name: apache_ldap 
+      build: ./docker_apache/
       volumes:
         - ./docker_apache/server:/var/www/html
         - ./docker_apache/conf_pwd/:/usr/local/apache2/
