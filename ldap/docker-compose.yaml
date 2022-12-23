@@ -8,7 +8,6 @@ services:
         - ./docker_apache/conf_pwd/:/usr/local/apache2/
         - ./docker_apache/etc_apache2/:/etc/apache2/
       ports:
-          - 80:80
           - 443:443
       restart: unless-stopped
 

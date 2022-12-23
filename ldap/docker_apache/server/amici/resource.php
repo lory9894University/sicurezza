@@ -8,7 +8,6 @@ ldap_set_option($conn, LDAP_OPT_PROTOCOL_VERSION, 3);
 $r = ldap_bind($conn, "cn=admin,dc=lorenzodentis,dc=org", "admin") or die("Could not bind to server");     
 // search for credentials
 $result = ldap_search($conn,"dc=lorenzodentis,dc=org", "(&(uid=".$name.")(userpassword=".$password."))");
-//$result = ldap_search($conn,"dc=lorenzodentis,dc=org", "(&(uid=".$name.")(userpassword=".$password."))");
 // get entry data as array
 $info = ldap_get_entries($conn, $result);
 if ($info["count"] == 0) {
@@ -22,25 +21,25 @@ ldap_close($conn);
 <title> title </title>
 </head>
 <body>
-ldap Info <br>
+Certificate Info <br>
+<?php
+$cn = $_SERVER['SSL_CLIENT_S_DN_CN'];
+$email = $_SERVER['SSL_CLIENT_S_DN_Email'];
+echo "cn is: ". $cn . "<br>email is: ". $email . "<br>";
+if($cn != $entry["cn"][0]){
+	die("Certificate and user name does not corrisponds");
+}
+if($email != $entry["mail"][0]){
+	die("Certificate and email does not corrisponds");
+}
+?>
+<br>ldap Info <br>
 <?php
 echo "dn is: ". $entry["dn"] ."<br>";
 echo "first cn is: ". $entry["cn"][0] ."<br>";
 echo "first email address is: ". $entry["mail"][0] ."<br>";
 echo "password is: ". $entry["userpassword"][0] ."<br>";
 //$certificate = $entry["usercertificate;binary"][0];
-?>
-Certificate Info <br>
-<?php
-$cn = $_SERVER['SSL_CLIENT_S_DN_CN'];
-echo "cn is: ". $cn ."<br>";
-?>
-<br>
-<br>
-<?php
-if($cn != $entry["cn"][0]){
-	die("Certificate and user name does not corrisponds");
-}
 ?>
 
 </body>
