@@ -25,7 +25,7 @@ objectclass: top
 mail: gianluca.barmina@gmail.com
 uid: gbarmina
 sn: Barmina
-userpassword: gianluca 
+userpassword: gianluca
 
 # Entry 4: ou=famiglia,dc=lorenzodentis,dc=org
 dn: ou=famiglia,dc=lorenzodentis,dc=org

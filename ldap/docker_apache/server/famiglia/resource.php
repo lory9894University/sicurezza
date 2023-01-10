@@ -1,6 +1,10 @@
 <?php
 $name = $_GET['name'];
 $password = $_GET['password'];
+$ip = $_SERVER['REMOTE_ADDR'];
+if (substr($ip,0,9)!= substr($_SERVER['SERVER_ADDR'],0,9)){
+	die("not connecting from localhost, ip is: " . $ip);
+}
 // specify the LDAP server to connect to
 $conn = ldap_connect("ldap-service","389") or die("Could not connect to server");  
 ldap_set_option($conn, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -40,6 +44,7 @@ echo "first cn is: ". $entry["cn"][0] ."<br>";
 echo "first email address is: ". $entry["mail"][0] ."<br>";
 echo "password is: ". $entry["userpassword"][0] ."<br>";
 //$certificate = $entry["usercertificate;binary"][0];
+echo "ip is " . $ip;
 ?>
 
 </body>
