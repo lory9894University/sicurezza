@@ -25,8 +25,7 @@ objectclass: top
 mail: gianluca.barmina@gmail.com
 uid: gbarmina
 sn: Barmina
-userpassword: {CRYPT}$6$r12ZVfMB$s6isV4ZFwK4S98cxswg00vDva617eIZtmROwPUmEOSD
- CBQAznbNl6w7mmc9WX16Hc5UeKsQUtl/cr.D8Qk1Tp0
+userpassword: gianluca 
 
 # Entry 4: ou=famiglia,dc=lorenzodentis,dc=org
 dn: ou=famiglia,dc=lorenzodentis,dc=org
@@ -43,8 +42,7 @@ mail: lory9894@gmail.com
 objectclass: inetOrgPerson
 sn: Dentis
 uid: ldent
-userpassword: {CRYPT}$6$DBF2AMrm$m0NZxhYR35pTMZYzdUA5y33m.MdAgYvWEsJ99dunO82
- K7QnnmP9.8Hs9fjpptdVwBlCTyYYBi4dC1hDylL7Xu.
+userpassword: lorenzo
 
 # Entry 6: cn=Renato Dentis,ou=famiglia,dc=lorenzodentis,dc=org
 dn: cn=Renato Dentis,ou=famiglia,dc=lorenzodentis,dc=org
@@ -57,7 +55,7 @@ objectclass: inetOrgPerson
 ou: Famiglia
 sn: Dentis
 uid: rdent
-userpassword: prova
+userpassword: renato
 
 # Entry 7: cn=Alessandro Masala,ou=amici,dc=lorenzodentis,dc=org
 dn: cn=Alessandro Masala,ou=amici,dc=lorenzodentis,dc=org
@@ -68,6 +66,5 @@ objectclass: top
 mail: masala.alessandro@gmail.com
 sn: Masala
 uid: amasala
-userpassword: {CRYPT}$6$DBF2AMrm$m0NZxhYR35pTMZYzdUA5y33m.MdAgYvWEsJ99dunO82
- K7QnnmP9.8Hs9fjpptdVwBlCTyYYBi4dC1hDylL7Xu.
+userpassword: alessandro
 
